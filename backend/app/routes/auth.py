@@ -1,13 +1,16 @@
 # backend/app/routes/auth.py
 
-from flask import Blueprint, request, jsonify
+from flask import jsonify, request
 from flask_bcrypt import Bcrypt
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from app.models.user import User
-from app import db
+from flask_jwt_extended import (create_access_token, get_jwt_identity,
+                                jwt_required)
 
-auth_bp = Blueprint('auth', __name__)
+from backend.app import db
+from backend.app.models.user import User
+from backend.app.routes import auth_bp
+
 bcrypt = Bcrypt()
+
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -21,6 +24,7 @@ def register():
     db.session.commit()
     return jsonify({"message": "Registered"}), 201
 
+
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -29,6 +33,7 @@ def login():
         access_token = create_access_token(identity=user.id)
         return jsonify(access_token=access_token), 200
     return jsonify({"message": "Invalid credentials"}), 401
+
 
 @auth_bp.route('/profile', methods=['GET'])
 @jwt_required()
