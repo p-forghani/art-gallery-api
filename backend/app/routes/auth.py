@@ -1,5 +1,3 @@
-# backend/app/routes/auth.py
-
 from flask import jsonify, request
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import (create_access_token, get_jwt_identity,
