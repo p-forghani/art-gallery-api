@@ -2,7 +2,8 @@ import os
 from pathlib import Path
 
 
-base_dir = Path(__file__).resolve().parent
+# store the db in the main app directory
+base_dir = Path(__file__).resolve().parent.parent
 
 
 class Config:
