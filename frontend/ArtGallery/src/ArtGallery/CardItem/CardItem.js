@@ -14,17 +14,19 @@ function Card(props) {
         <img
           id="cardImage"
           className="card-image"
-          alt={currentCard.title}
-          src={currentCard.imgURL}
+          alt={currentCard.name}
+          src={currentCard.image_url || "https://via.placeholder.com/300"}
         />
       </div>
       <div className="overlay">
         <div id="cardTitleContainer" className="items card-title-container">
-          <p id="cardTitle">{currentCard.title}</p>
+          <p id="cardTitle">{currentCard.name}</p>
           <hr />
         </div>
         <div id="cardDateContainer" className="items card-date-container">
-          <p id="cardDate">{currentCard.date}</p>
+          <p id="cardDate">
+            {currentCard.date_created?.split("T")[0] || "No Date"}
+          </p>
         </div>
       </div>
     </div>

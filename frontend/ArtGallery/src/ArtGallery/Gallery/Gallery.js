@@ -1,36 +1,39 @@
 import React, { useState, useEffect, useCallback } from "react";
 import "./gallery.css";
-import { getAllCards } from "../../services/api";
 import { CardItem } from "../CardItem/CardItem";
+import { getAllArt } from "../../api/artService";
 
-export const Gallery = props => {
-  // State using for extractig cards data from DB
+export const Gallery = (props) => {
   const [cardItemsData, setCardItemsData] = useState([]);
-
   const [clickedCard, setClickedCard] = useState([]);
 
   const recieveCardDetails = useCallback(
-    propsChild => {
+    (propsChild) => {
       let card = propsChild;
-      console.log("recieveCardDetails", card);
+      console.log("🖼️ Clicked Card:", card);
       setClickedCard(card);
       props.handleGalleryClickedCard(card);
     },
-    [] 
+    [props]
   );
 
-  useEffect(
-    () => {
-      // Replace Firebase with our API service call
-      const fetchCards = async () => {
-        const data = await getAllCards();
-        setCardItemsData(data);
-      };
-      
-      fetchCards();
-    },
-    [] // Occurs when the state within is changing (once)
-  );
+  useEffect(() => {
+    getAllArt()
+      .then((data) => {
+        const formattedData = {};
+        data.forEach((item) => {
+          console.log("📸 Image URL:", item.image_url); // Confirm backend value
+          formattedData[item.id] = {
+            ...item,
+            image_url: item.image_url?.startsWith("http")
+              ? item.image_url
+              : `http://127.0.0.1:5000${item.image_url}`, // ensure correct URL
+          };
+        });
+        setCardItemsData(formattedData);
+      })
+      .catch(console.error);
+  }, []);
 
   let cardItemsList = createCardItemsList(
     props.search,
@@ -50,11 +53,6 @@ export const Gallery = props => {
   );
 };
 
-/**
- * Extract JSON recieved from DB {cardItemsData}
- * init new {CardItem} component for each JSON object, as props
- * @param {State} cardItemsData
- */
 function createCardItemsList(search, cardItemsData, recieveCardDetails) {
   let values = Object.values(cardItemsData);
   let list;
@@ -65,38 +63,24 @@ function createCardItemsList(search, cardItemsData, recieveCardDetails) {
     list = values;
   }
 
-  let cardItemsList = list.map(i => (
+  return list.map((i) => (
     <CardItem
       currentCard={i}
       key={i.id.toString()}
       handleClickedCard={recieveCardDetails}
     />
   ));
-
-  return cardItemsList;
 }
 
-/**
- * Filter the cards according to the search text
- */
 function filterCards(values, search) {
-  let filtered = values.filter(i => {
-    // Filter card by the title
-    let titleFlag = i.title.toLowerCase().indexOf(search) !== -1;
-
-    // Filter card by the tags, if not filtered by the title
+  return values.filter((i) => {
+    const titleFlag = i.name.toLowerCase().includes(search);
     let tagsFlag = false;
+
     if (!titleFlag && i.tags) {
-      i.tags.filter(tag => {
-        if (!tagsFlag) {
-          tagsFlag = tag.toLowerCase().indexOf(search) !== -1;
-        }
-      });
+      tagsFlag = i.tags.some((tag) => tag.toLowerCase().includes(search));
     }
 
-    // Return if the card chosen by the filtering
     return titleFlag || tagsFlag;
   });
-
-  return filtered;
 }

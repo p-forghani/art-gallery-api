@@ -114,3 +114,28 @@
   height: 100%;
   width: 100%;
 }
+.auth-input {
+  width: 90%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+.auth-button,
+.link-button {
+  background-color: #c74778;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  margin: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.link-button {
+  background-color: transparent;
+  color: #c74778;
+  text-decoration: underline;
+}
