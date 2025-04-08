@@ -18,11 +18,12 @@ export const getProfile = (token) => {
   });
 };
 
-export const getAllArt = () => {
-  return axios.get(`${API_URL}/store/`);
-};
+// This is duplicate code from artService.js
+// export const getAllArt = () => {
+//   return axios.get(`${API_URL}/store/`);
+// };
 
-export const getArtById = (id) => {
-  return axios.get(`${API_URL}/store/${id}`);
-};
+// export const getArtById = (id) => {
+//   return axios.get(`${API_URL}/store/${id}`);
+// };
 
