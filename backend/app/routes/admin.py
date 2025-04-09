@@ -1,11 +1,12 @@
-from backend.app.routes import admin_bp
-from backend.app.models.art import Category
-from backend.app.models.art import Tag
+from flask import jsonify, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
+
 from backend.app import db
+from backend.app.models.art import Artwork, Category, Tag
+from backend.app.schemas.art_schema import (
+    ArtworkInputSchema, ArtworkOutputSchema)
 from backend.app.models.user import User
-from backend.app.models.art import Artwork
-from flask import request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from backend.app.routes import admin_bp
 
 
 @admin_bp.before_request
@@ -19,97 +20,97 @@ def check_admin_access():
 
 
 # Create a new artwork
-@admin_bp.route('/', methods=['POST'])
+@admin_bp.route('/', methods=['GET', 'POST'])
 def create_artwork():
+
+    if request.method == 'GET':
+        # Return data needed to populate the form
+        categories = Category.query.all()
+        tags = Tag.query.all()
+        return jsonify({
+            "categories": [{"id": c.id, "name": c.name} for c in categories],
+            "tags": [{"id": t.id, "name": t.name} for t in tags]
+        }), 200
+
+    # POST method - create new artwork
     data = request.get_json()
+    schema = ArtworkInputSchema()
+    # Client will send category_id
+    validated_data = schema.validate(data)
 
-    # Handle category: accept either category_id or category_title
-    category_id = data.get('category_id')
-    if not category_id:
-        category_title = data.get('category_title')
-        if not category_title:
-            return jsonify(
-                {"message": "Category ID or title is required"}), 400
+    tag_names = validated_data.pop('tag_names', [])
 
-    # Resolve category_id from category_title
-    category = Category.query.filter_by(title=category_title).first()
-    if not category:
-        return jsonify({"message": "Category not found"}), 404
-    category_id = category.id
-
-    # Handle tags
-    tag_names = data.get('tags', [])
-    tags = []
-    for tag_name in tag_names:
-        tag = Tag.query.filter_by(name=tag_name).first()
-        if not tag:
-            tag = Tag(name=tag_name)
-            db.session.add(tag)
-        tags.append(tag)
-
-    new_artwork = Artwork(
-        name=data.get('title'),
-        description=data.get('description'),
-        category_id=category_id,
-        tags=tags
-    )
-
+    # Create artwork without tags first
+    new_artwork = Artwork(**validated_data)
     db.session.add(new_artwork)
+
+    # Handle new tags
+    if tag_names:
+        for tag_name in tag_names:
+            # Check if tag exists
+            tag = Tag.query.filter_by(name=tag_name.strip()).first()
+            if not tag:
+                # Create new tag if it doesn't exist
+                tag = Tag(name=tag_name)
+                db.session.add(tag)
+            new_artwork.tags.append(tag)
+
     db.session.commit()
     return jsonify(
-        {"message": "Artwork created", "artwork": new_artwork.id}), 201
-
-
-# Read all artworks
-@admin_bp.route('/', methods=['GET'])
-def get_all_artworks():
-    # TODO
-    pass
+        {"message": "Artwork created", "artwork_id": new_artwork.id}), 201
 
 
 # Read a single artwork by ID
 @admin_bp.route('/<int:artwork_id>', methods=['GET'])
 def get_artwork(artwork_id):
-    artwork = Artwork.query.get_or_404(artwork_id)
+    artwork = Artwork.query.get_or_404(ident=artwork_id)
     return jsonify(artwork.to_dict()), 200
 
 
 # Update an artwork by ID
-@admin_bp.route('/<int:artwork_id>', methods=['PUT'])
+@admin_bp.route('/<int:artwork_id>', methods=['GET', 'PUT'])
 def update_artwork(artwork_id):
     artwork = Artwork.query.get_or_404(artwork_id)
+
+    if request.method == 'GET':
+        # Return data needed to populate the form
+        schema = ArtworkOutputSchema()
+        # Client needs categories and tags to populate the form
+        categories = Category.query.all()
+        tags = Tag.query.all()
+        return jsonify({
+            "artwork": schema.dump(artwork),
+            "categories": [{"id": c.id, "title": c.title} for c in categories],
+            "tags": [{"id": t.id, "title": t.title} for t in tags]
+        }), 200
+
+    # PUT method - update existing artwork
     data = request.get_json()
-    artwork.title = data.get('title', artwork.title)
-    artwork.description = data.get('description', artwork.description)
+    schema = ArtworkInputSchema()
+    validated_data = schema.validate(data)
 
-    # Handle category: accept either category_id or category_title
-    category_id = data.get('category_id')
-    if not category_id:
-        category_title = data.get('category_title')
-        if not category_title:
-            return jsonify(
-                {"message": "Category ID or title is required"}), 400
+    tag_names = validated_data.pop('tag_names', [])
 
-    # Resolve category_id from category_title
-    category = Category.query.filter_by(title=category_title).first()
-    if not category:
-        return jsonify({"message": "Category not found"}), 404
-    category_id = category.id
+    # Update artwork fields
+    for key, value in validated_data.items():
+        setattr(artwork, key, value)
 
     # Handle tags
-    tag_names = data.get('tags', [])
     if tag_names:
-        tags = []
+        # Clear existing tags
+        artwork.tags.clear()
         for tag_name in tag_names:
-            tag = Tag.query.filter_by(name=tag_name).first()
+            # Check if tag exists
+            tag = Tag.query.filter_by(name=tag_name.strip()).first()
             if not tag:
+                # Create new tag if it doesn't exist
                 tag = Tag(name=tag_name)
                 db.session.add(tag)
-            tags.append(tag)
-        artwork.tags = tags
+            artwork.tags.append(tag)
 
     db.session.commit()
-    return jsonify({"message": "Artwork updated"}), 200
+    return jsonify({"message": "Artwork updated",
+                    "artwork_id": artwork.id}), 200
 
 
 # Delete an artwork by ID

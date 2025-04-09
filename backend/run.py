@@ -1,4 +1,4 @@
-from app import create_app  # app = backend/app/__init__.py
+from backend.app import create_app
 
 app = create_app()
 

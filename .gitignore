@@ -174,3 +174,4 @@ cython_debug/
 .pypirc
 
 frontend/ArtGallery/node_modules/
+app.db
