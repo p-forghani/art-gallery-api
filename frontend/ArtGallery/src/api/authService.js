@@ -2,12 +2,12 @@ import axios from "axios";
 
 const API_URL = "http://127.0.0.1:5000";
 
-export const registerUser = (username, password) => {
-  return axios.post(`${API_URL}/auth/register`, { username, password });
+export const registerUser = (name, email, password) => {
+  return axios.post(`${API_URL}/auth/register`, { name, email, password });
 };
 
-export const loginUser = (username, password) => {
-  return axios.post(`${API_URL}/auth/login`, { username, password });
+export const loginUser = (email, password) => {
+  return axios.post(`${API_URL}/auth/login`, { email, password });
 };
 
 export const getProfile = (token) => {

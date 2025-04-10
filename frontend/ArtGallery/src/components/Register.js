@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { registerUser } from "../api/authService";
 import { useHistory } from "react-router-dom";
 import "./auth.css";
 
 export const Register = () => {
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -13,11 +14,11 @@ export const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await registerUser(username, password);
+      await registerUser(name, email, password);  // Sending name, email, and password
       setSuccess("Registration successful! Redirecting to login...");
       setTimeout(() => history.push("/login"), 1500);
     } catch (err) {
-      setError("Username already exists or invalid input");
+      setError("Registration failed. Please try again.");
     }
   };
 
@@ -29,9 +30,16 @@ export const Register = () => {
         <input
           className="auth-input"
           type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Full Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          className="auth-input"
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
         <input
           className="auth-input"
