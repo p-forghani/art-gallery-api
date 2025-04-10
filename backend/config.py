@@ -12,6 +12,7 @@ class Config:
         os.environ.get('DATABASE_URL')
         or 'sqlite:///' + os.path.join(base_dir, 'app.db')
     )
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY') or 'your_jwt_secret_key'
 
 
 class TestingConfig(Config):

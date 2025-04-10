@@ -1,15 +1,18 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask import request
 from flask import Flask
 from backend.config import Config
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 
 
 db = SQLAlchemy()
 migrate = Migrate()
 bcrypt = Bcrypt()
 jwt = JWTManager()
+cors = CORS()
 
 
 # Initialize the Flask application
@@ -32,6 +35,9 @@ def create_app(config_class=Config):
     # Initialize Flask-JWT-Extended
     jwt.init_app(app)
 
+    # Initialize Flask-CORS
+    cors.init_app(app=app, supports_credentials=True)
+
     # Register blueprints
     from backend.app.routes import auth_bp as auth_blueprint
     from backend.app.routes import admin_bp as admin_blueprint
@@ -39,5 +45,10 @@ def create_app(config_class=Config):
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(admin_blueprint)
     app.register_blueprint(store_blueprint)
+
+    @app.before_request
+    def log_request_payload():
+        if request.method in ['POST', 'PUT', 'PATCH']:
+            print(f"Request payload: {request.get_json()}")
 
     return app
