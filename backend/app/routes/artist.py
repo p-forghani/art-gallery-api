@@ -16,7 +16,7 @@ def check_admin_access():
     user = User.query.get(current_user_id)
     if not user or user.role_id != 2:
         return jsonify(
-            {"message": "Access forbidden: Admins only"}), 403
+            {"message": "Access forbidden: Artists only"}), 403
 
 
 # Create a new artwork

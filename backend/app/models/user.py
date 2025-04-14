@@ -1,5 +1,6 @@
 from backend.app import db
 from backend.app import bcrypt
+from backend.app.models.art import Artwork
 
 
 class User(db.Model):
@@ -10,6 +11,8 @@ class User(db.Model):
         db.Integer, db.ForeignKey('role.id'), nullable=False, default=1)
     role = db.relationship('Role', back_populates='users')
     password_hash = db.Column(db.String(128), nullable=False)
+    artworks = db.relationship('Artwork', back_populates='artist')
+
 
     def __repr__(self):
         return f"<User {self.name}>"

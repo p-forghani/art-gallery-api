@@ -10,6 +10,9 @@ class Artwork(db.Model):
         db.Integer, db.ForeignKey('currency.id'), nullable=False)
     currency = db.relationship('Currency', back_populates='artworks')
     stock = db.Column(db.Integer, nullable=False)
+    artist_id = db.Column(
+        db.Integer, db.ForeignKey('user.id'), nullable=False)
+    artist = db.relationship('User', back_populates='artworks')
     # Path to the image file
     image_path = db.Column(db.String(255), nullable=True)
     category_id = db.Column(

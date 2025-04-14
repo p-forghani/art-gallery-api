@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from backend.scripts.initialize_roles import initialize_roles
 from flask import request
 from flask import Flask
 from backend.config import Config
@@ -38,12 +39,16 @@ def create_app(config_class=Config):
     # Initialize Flask-CORS
     cors.init_app(app=app, supports_credentials=True)
 
+    # Run the role initialization script
+    with app.app_context():
+        initialize_roles()
+
     # Register blueprints
     from backend.app.routes import auth_bp as auth_blueprint
-    from backend.app.routes import admin_bp as admin_blueprint
+    from backend.app.routes import artist_bp as artist_blueprint
     from backend.app.routes import store_bp as store_blueprint
     app.register_blueprint(auth_blueprint)
-    app.register_blueprint(admin_blueprint)
+    app.register_blueprint(artist_blueprint)
     app.register_blueprint(store_blueprint)
 
     @app.before_request
