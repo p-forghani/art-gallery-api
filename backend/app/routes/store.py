@@ -3,7 +3,7 @@ from backend.app.models.art import Artwork
 from backend.app.routes import store_bp
 
 
-@store_bp.route('/store', methods=['GET'])
+@store_bp.route('/', methods=['GET'])
 def get_all_art():
     """
     Get all artwork from the database.
@@ -23,7 +23,7 @@ def get_all_art():
         }), 500
 
 
-@store_bp.route('/store/<int:artwork_id>', methods=['GET'])
+@store_bp.route('/<int:artwork_id>', methods=['GET'])
 def get_artwork(artwork_id):
     """
     Get a single artwork by its ID.

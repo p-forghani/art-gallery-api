@@ -6,10 +6,10 @@ from backend.app.models.art import Artwork, Category, Tag
 from backend.app.schemas.art_schema import (
     ArtworkInputSchema, ArtworkOutputSchema)
 from backend.app.models.user import User
-from backend.app.routes import admin_bp
+from backend.app.routes import artist_bp
 
 
-@admin_bp.before_request
+@artist_bp.before_request
 @jwt_required()
 def check_admin_access():
     current_user_id = get_jwt_identity()
@@ -20,7 +20,7 @@ def check_admin_access():
 
 
 # Create a new artwork
-@admin_bp.route('/', methods=['GET', 'POST'])
+@artist_bp.route('/', methods=['GET', 'POST'])
 def create_artwork():
 
     if request.method == 'GET':
@@ -61,14 +61,14 @@ def create_artwork():
 
 
 # Read a single artwork by ID
-@admin_bp.route('/<int:artwork_id>', methods=['GET'])
+@artist_bp.route('/<int:artwork_id>', methods=['GET'])
 def get_artwork(artwork_id):
     artwork = Artwork.query.get_or_404(ident=artwork_id)
     return jsonify(artwork.to_dict()), 200
 
 
 # Update an artwork by ID
-@admin_bp.route('/<int:artwork_id>', methods=['GET', 'PUT'])
+@artist_bp.route('/<int:artwork_id>', methods=['GET', 'PUT'])
 def update_artwork(artwork_id):
     artwork = Artwork.query.get_or_404(artwork_id)
 
@@ -114,7 +114,7 @@ def update_artwork(artwork_id):
 
 
 # Delete an artwork by ID
-@admin_bp.route('/<int:artwork_id>', methods=['DELETE'])
+@artist_bp.route('/<int:artwork_id>', methods=['DELETE'])
 def delete_artwork(artwork_id):
     artwork = Artwork.query.get_or_404(artwork_id)
     db.session.delete(artwork)
