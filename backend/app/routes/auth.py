@@ -3,7 +3,7 @@ from flask_jwt_extended import (create_access_token, get_jwt_identity,
                                 jwt_required)
 
 from backend.app import db
-from backend.app.models.user import User
+from backend.app.models import User
 from backend.app.routes import auth_bp
 from backend.app.schemas.user_schema import UserSchema
 

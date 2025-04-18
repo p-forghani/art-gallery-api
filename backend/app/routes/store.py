@@ -1,5 +1,5 @@
 from flask import jsonify
-from backend.app.models.art import Artwork
+from backend.app.models import Artwork
 from backend.app.routes import store_bp
 
 

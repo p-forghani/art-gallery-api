@@ -2,10 +2,10 @@ from flask import jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from backend.app import db
-from backend.app.models.art import Artwork, Category, Tag
+from backend.app.models import Artwork, Category, Tag
 from backend.app.schemas.art_schema import (
     ArtworkInputSchema, ArtworkOutputSchema)
-from backend.app.models.user import User
+from backend.app.models import User
 from backend.app.routes import artist_bp
 
 
@@ -22,6 +22,10 @@ def check_admin_access():
 # Create a new artwork
 @artist_bp.route('/', methods=['GET', 'POST'])
 def create_artwork():
+
+    # DEBUGGING
+    print(f"request.method: {request.method}")
+    print(f"request.json: {request.json}")
 
     if request.method == 'GET':
         # Return data needed to populate the form

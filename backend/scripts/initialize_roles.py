@@ -1,8 +1,7 @@
-from backend.app import create_app, db
-from backend.app.models.user import Role
+from backend.app.models import Role
 
 
-def initialize_roles():
+def initialize_roles(app, db):
     """
     Initialize default roles in the database with hardcoded IDs.
     """
@@ -11,7 +10,6 @@ def initialize_roles():
         {"id": 2, "name": "artist"},
         {"id": 3, "name": "user"}
     ]
-    app = create_app()
 
     with app.app_context():
         for role in roles:
@@ -23,6 +21,9 @@ def initialize_roles():
                 db.session.add(new_role)
                 print(f"Added role: {role['name']} with ID {role['id']}")
             else:
-                print(f"Role already exists: {role['name']} with ID {role['id']}")
+                print(
+                    f"Role already exists: "
+                    f"{role['name']} with ID {role['id']}"
+                    )
         db.session.commit()
         print("Roles initialized successfully.")

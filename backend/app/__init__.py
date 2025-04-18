@@ -1,5 +1,4 @@
 from flask_sqlalchemy import SQLAlchemy
-from backend.scripts.initialize_roles import initialize_roles
 from flask import request
 from flask import Flask
 from backend.config import Config
@@ -39,9 +38,14 @@ def create_app(config_class=Config):
     # Initialize Flask-CORS
     cors.init_app(app=app, supports_credentials=True)
 
-    # Run the role initialization script
+    # TODO: This block doesn't work properly. fix it
+    from backend.scripts.initialize_roles import initialize_roles
+    from backend.scripts.initialize_currencies import initialize_currencies
+    # Run the role and currency initialization scripts
     with app.app_context():
-        initialize_roles()
+        db.create_all()
+        initialize_roles(app, db)
+        initialize_currencies(app, db)
 
     # Register blueprints
     from backend.app.routes import auth_bp as auth_blueprint

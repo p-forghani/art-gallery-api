@@ -73,6 +73,20 @@ class Category(db.Model):
     title = db.Column(db.String(255), unique=True, nullable=False)
     artworks = db.relationship('Artwork', back_populates='category')
 
+    def to_dict(self):
+        """
+        Convert the Category object to a dictionary representation.
+
+        Returns:
+            dict: A dictionary containing the category's details, including:
+                - id (int): The ID of the category.
+                - title (str): The title of the category.
+        """
+        return {
+            'id': self.id,
+            'title': self.title
+        }
+
     def __repr__(self):
         return f"<Category {self.title}>"
 
