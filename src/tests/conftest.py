@@ -1,8 +1,8 @@
 import pytest
-from backend.app.models import User, Category
+from src.app.models import User, Category
 
-from backend.app import create_app, db
-from backend.config import TestingConfig
+from src.app import create_app, db
+from src.config import TestingConfig
 
 
 @pytest.fixture

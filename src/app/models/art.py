@@ -1,4 +1,4 @@
-from backend.app import db
+from src.app import db
 
 
 class Artwork(db.Model):

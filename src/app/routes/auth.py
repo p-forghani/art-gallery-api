@@ -2,10 +2,10 @@ from flask import jsonify, request
 from flask_jwt_extended import (create_access_token, get_jwt_identity,
                                 jwt_required)
 
-from backend.app import db
-from backend.app.models import User
-from backend.app.routes import auth_bp
-from backend.app.schemas.user_schema import UserSchema
+from src.app import db
+from src.app.models import User
+from src.app.routes import auth_bp
+from src.app.schemas.user_schema import UserSchema
 
 
 @auth_bp.route('/register', methods=['POST'])

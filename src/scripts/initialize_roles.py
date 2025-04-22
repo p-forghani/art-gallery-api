@@ -1,4 +1,4 @@
-from backend.app.models import Role
+from src.app.models import Role
 
 
 def initialize_roles(app, db):

@@ -1,6 +1,6 @@
 from flask import jsonify
-from backend.app.models import Artwork
-from backend.app.routes import store_bp
+from src.app.models import Artwork
+from src.app.routes import store_bp
 
 
 @store_bp.route('/', methods=['GET'])

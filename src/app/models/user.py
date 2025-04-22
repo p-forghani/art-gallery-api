@@ -1,5 +1,5 @@
-from backend.app import db
-from backend.app import bcrypt
+from src.app import db
+from src.app import bcrypt
 
 
 class User(db.Model):

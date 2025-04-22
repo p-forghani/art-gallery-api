@@ -1,12 +1,12 @@
 from flask import jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
-from backend.app import db
-from backend.app.models import Artwork, Category, Tag
-from backend.app.schemas.art_schema import (
+from src.app import db
+from src.app.models import Artwork, Category, Tag
+from src.app.schemas.art_schema import (
     ArtworkInputSchema, ArtworkOutputSchema)
-from backend.app.models import User
-from backend.app.routes import artist_bp
+from src.app.models import User
+from src.app.routes import artist_bp
 
 
 @artist_bp.before_request

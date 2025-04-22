@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask import request
 from flask import Flask
-from backend.config import Config
+from src.config import Config
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
@@ -39,8 +39,8 @@ def create_app(config_class=Config):
     cors.init_app(app=app, supports_credentials=True)
 
     # TODO: This block doesn't work properly. fix it
-    from backend.scripts.initialize_roles import initialize_roles
-    from backend.scripts.initialize_currencies import initialize_currencies
+    from src.scripts.initialize_roles import initialize_roles
+    from src.scripts.initialize_currencies import initialize_currencies
     # Run the role and currency initialization scripts
     with app.app_context():
         db.create_all()
@@ -48,9 +48,9 @@ def create_app(config_class=Config):
         initialize_currencies(app, db)
 
     # Register blueprints
-    from backend.app.routes import auth_bp as auth_blueprint
-    from backend.app.routes import artist_bp as artist_blueprint
-    from backend.app.routes import store_bp as store_blueprint
+    from src.app.routes import auth_bp as auth_blueprint
+    from src.app.routes import artist_bp as artist_blueprint
+    from src.app.routes import store_bp as store_blueprint
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(artist_blueprint)
     app.register_blueprint(store_blueprint)

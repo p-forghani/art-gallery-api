@@ -1,4 +1,4 @@
-from backend.app.models import Currency
+from src.app.models import Currency
 
 
 def initialize_currencies(app, db):

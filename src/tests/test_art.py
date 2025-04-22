@@ -1,4 +1,4 @@
-from backend.app.models import Artwork
+from src.app.models import Artwork
 
 
 def test_create_artwork(client, auth_headers, category):
