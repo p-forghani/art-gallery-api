@@ -1,1 +1,1 @@
-# art-gallery
+# art-gallery-api
