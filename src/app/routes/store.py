@@ -49,3 +49,5 @@ def get_artwork(artwork_id):
             'status': 'error',
             'message': str(e)
         }), 500
+
+# TODO: Implement the add-to-cart, cart, checkout, payment endpoints

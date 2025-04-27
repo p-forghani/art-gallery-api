@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import current_app, jsonify, request
 from flask_jwt_extended import (create_access_token, get_jwt_identity,
                                 jwt_required)
 
@@ -10,6 +10,7 @@ from src.app.schemas.user_schema import UserSchema
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
+    current_app.logger.info("Registering a new user")
     data = request.get_json()
     schema = UserSchema()
     # Validate the input data
@@ -31,6 +32,7 @@ def register():
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
+    current_app.logger.info("Logging in user")
     data = request.get_json()
     schema = UserSchema(only=('email', 'password'))
     # Validate the input data
@@ -40,7 +42,7 @@ def login():
     # Check if the user exists and verify the password
     user = User.query.filter_by(email=data['email']).first()
     if user and user.check_password(data['password']):
-        access_token = create_access_token(identity=user.id)
+        access_token = create_access_token(identity=str(user.id))
         return jsonify(access_token=access_token), 200
     return jsonify({"message": "Invalid credentials"}), 401
 

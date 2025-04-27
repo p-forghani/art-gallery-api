@@ -10,6 +10,7 @@ Flask-Bcrypt==1.0.1
 flask-cors==5.0.1
 Flask-JWT-Extended==4.7.1
 Flask-Migrate==4.1.0
+flask-restx==1.1.0
 Flask-SQLAlchemy==3.1.1
 greenlet==3.1.1
 httpie==3.2.4

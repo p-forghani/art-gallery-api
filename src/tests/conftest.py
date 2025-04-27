@@ -1,5 +1,5 @@
 import pytest
-from src.app.models import User, Category
+from src.app.models import User
 
 from src.app import create_app, db
 from src.config import TestingConfig
@@ -38,18 +38,6 @@ def artist_user(app):
 
 
 @pytest.fixture
-def category(app):
-    """
-    Create a test category for artworks.
-    """
-    with app.app_context():
-        category = Category(title="Painting")
-        db.session.add(category)
-        db.session.commit()
-        return category.to_dict()
-
-
-@pytest.fixture
 def auth_headers(client, artist_user):
     """
     Log in the artist user and return the authorization headers.
@@ -59,5 +47,27 @@ def auth_headers(client, artist_user):
         "password": "password"
     })
     access_token = response.get_json()["access_token"]
-    print(f"Access token: {access_token}")  # Debugging line to check the token
     return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
+def create_artwork(client, auth_headers):
+    """
+    Helper function to create an artwork.
+    """
+    def _create_artwork(data=None):
+        if data is None:
+            data = {
+                "title": "Default Artwork",
+                "price": 100.0,
+                "currency_id": 1,  # Assuming a currency with ID 1 exists
+                "stock": 5,
+                "description": "Default description.",
+                "category_name": "Default Category",
+                "tag_names": ["default", "tag"]
+            }
+        response = client.post(
+            "/artist/artwork", json=data, headers=auth_headers)
+        assert response.status_code == 201
+        return response.get_json()["artwork_id"]
+    return _create_artwork
