@@ -1,4 +1,7 @@
 from flask import jsonify
+from flask import abort
+from marshmallow import ValidationError
+from src.app.schemas.art_schema import ArtworkOutputSchema
 from src.app.models import Artwork
 from src.app.routes import store_bp
 
@@ -32,22 +35,24 @@ def get_artwork(artwork_id):
     Returns:
         The artwork details if found, or an error message if not found
     """
-    try:
-        artwork = Artwork.query.get(artwork_id)
-        if artwork:
-            return jsonify({
-                'status': 'success',
-                'data': artwork.to_dict()
-            }), 200
-        else:
-            return jsonify({
-                'status': 'error',
-                'message': 'Artwork not found'
-            }), 404
-    except Exception as e:
+    artwork = Artwork.query.get(artwork_id)
+    if artwork:
+        schema = ArtworkOutputSchema()
+        try:
+            validated_data = schema.load(artwork.to_dict())
+        except ValidationError as err:
+            return abort(
+                400,
+                description={"message": "Invalid input", "error": str(err)})
+        # Return the validated data
+        return jsonify({
+            'status': 'success',
+            'data': validated_data
+        }), 200
+    else:
         return jsonify({
             'status': 'error',
-            'message': str(e)
-        }), 500
+            'message': 'Artwork not found'
+        }), 404
 
 # TODO: Implement the add-to-cart, cart, checkout, payment endpoints
