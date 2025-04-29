@@ -12,11 +12,10 @@ from src.app.schemas.user_schema import UserSchema
 @auth_bp.route('/register', methods=['POST'])
 def register():
     current_app.logger.info("Registering a new user")
-    data = request.get_json()
     schema = UserSchema()
     # Validate the input data
     try:
-        validated_data = schema.load(data)
+        validated_data = schema.load(request.get_json())
     except ValidationError as err:
         return jsonify(err.messages), 400
     # Check if the user already exists
@@ -29,17 +28,18 @@ def register():
     new_user.set_password(validated_data['password'])
     db.session.add(new_user)
     db.session.commit()
-    return jsonify({"message": "Registered"}), 201
+
+    return jsonify({
+        "message": "Registered", "user": schema.dump(new_user)}), 201
 
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
     current_app.logger.info("Logging in user")
-    data = request.get_json()
-    schema = UserSchema(only=('email', 'password'))
+    schema = UserSchema(only=('id', 'email', 'password'))
     # Validate the input data
     try:
-        validate_data = schema.load(data)
+        validate_data = schema.load(request.get_json())
     except ValidationError as err:
         return jsonify(err.messages), 400
     # Check if the user exists and verify the password
