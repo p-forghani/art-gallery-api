@@ -19,11 +19,5 @@ def initialize_roles(app, db):
                 # Create the role if it doesn't exist
                 new_role = Role(id=role["id"], name=role["name"])
                 db.session.add(new_role)
-                print(f"Added role: {role['name']} with ID {role['id']}")
-            else:
-                print(
-                    f"Role already exists: "
-                    f"{role['name']} with ID {role['id']}"
-                    )
         db.session.commit()
         print("Roles initialized successfully.")

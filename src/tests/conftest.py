@@ -3,6 +3,7 @@ from src.app.models import User
 
 from src.app import create_app, db
 from src.config import TestingConfig
+from src.app.schemas.user_schema import UserSchema
 
 
 @pytest.fixture
@@ -33,8 +34,16 @@ def artist_user(app):
         db.session.add(artist)
         db.session.commit()
         queried_user = User.query.filter_by(email="artist@example.com").first()
-        print(f"User role ID: {queried_user.role_id}")
-        return artist.to_dict()
+        assert queried_user is not None, (
+            "Artist user was not created successfully."
+        )
+        assert queried_user.role_id == 2, (
+            "Artist user does not have the correct role_id."
+        )
+        assert queried_user.check_password("password"), (
+            "Artist user password is incorrect."
+        )
+        return UserSchema().dump(artist)
 
 
 @pytest.fixture

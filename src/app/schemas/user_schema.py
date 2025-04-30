@@ -13,4 +13,3 @@ class UserSchema(Schema):
         if data.get('password') != data.get('confirm_password'):
             raise ValidationError("Passwords do not match")
         return data
-

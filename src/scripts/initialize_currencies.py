@@ -6,10 +6,15 @@ def initialize_currencies(app, db):
     Initialize the IRR, USD, CAD, EUR currencies in the Currency table
     '''
     currencies = [
-        {"id": 1, "title": "Euro", "symbol": "EUR"},
-        {"id": 2, "title": "United States Dollar", "symbol": "USD"},
-        {"id": 3, "title": "Canadian Dollar", "symbol": "CAD"},
-        {"id": 4, "title": "Iranian Rial", "symbol": "IRR"}
+        {"id": 1, "title": "Euro", "symbol": "€", "code": "EUR"},
+        {"id": 2, "title": "United States Dollar",
+         "symbol": "$", "code": "USD"},
+        {"id": 3, "title": "Canadian Dollar", "symbol": "C$", "code": "CAD"},
+        {"id": 4, "title": "Iranian Rial", "symbol": "﷼", "code": "IRR"},
+        {"id": 5, "title": "Toman", "symbol": "تومان", "code": "TOMAN"},
+        {"id": 7, "title": "Pound Sterling", "symbol": "£", "code": "GBP"},
+        {"id": 8, "title": "Yen", "symbol": "¥", "code": "JPY"},
+        {"id": 9, "title": "Ruble", "symbol": "₽", "code": "RUB"},
     ]
     with app.app_context():
         for currency in currencies:
@@ -22,17 +27,9 @@ def initialize_currencies(app, db):
                 new_currency = Currency(
                     id=currency["id"],
                     title=currency["title"],
-                    symbol=currency["symbol"]
+                    symbol=currency["symbol"],
+                    code=currency["code"],
                 )
                 db.session.add(new_currency)
-                print(
-                    f"Added currency: {currency['title']} "
-                    f"with symbol {currency['symbol']}"
-                )
-            else:
-                print(
-                    f"Currency already exists: "
-                    f"{currency['title']} with symbol {currency['symbol']}"
-                )
         db.session.commit()
         print("Currencies initialized successfully.")

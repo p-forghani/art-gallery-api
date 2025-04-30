@@ -1,5 +1,5 @@
-from flask import abort, request
-from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask import abort, request, current_app
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from flask_restx import Resource
 
 from src.app import db
@@ -7,13 +7,14 @@ from src.app.models import Artwork, Category, Currency, Tag, User
 from src.app.routes import artist_bp
 from src.app.routes import artist_namespace as api
 from src.app.schemas.art_schema import (ArtworkInputSchema,
-                                        ArtworkOutputSchema, TagSchema)
+                                        ArtworkOutputSchema, CategorySchema,
+                                        CurrencySchema, TagSchema)
 
 
 @artist_bp.before_request
-@jwt_required()
 def check_admin_access():
-    print('Running... check_admin_access()')  # DEBUGGING
+    current_app.logger.debug('Running check_admin_access()')
+    verify_jwt_in_request()
     current_user_id = get_jwt_identity()
     user = db.session.get(User, current_user_id)
     if not user or user.role_id != 2:
@@ -23,7 +24,7 @@ def check_admin_access():
 @api.route('/dashboard', methods=['GET'])
 class ArtistDashboard(Resource):
     def get(self):
-        print('Running... get()')  # DEBUGGING
+        current_app.logger.debug('Running ArtistDashboard.get()')
         # TODO: Paginate the artworks
         artworks = Artwork.query.filter_by(artist_id=get_jwt_identity()).all()
         schema = ArtworkOutputSchema(many=True)
@@ -38,7 +39,7 @@ class ArtworkResource(Resource):
     @staticmethod
     def get_artwork_or_404(artwork_id):
         """Helper method to get an artwork or return 404"""
-        print('Running... get_artwork_or_404()')  # DEBUGGING
+        current_app.logger.debug('Running... get_artwork_or_404()')
         artwork = db.session.get(Artwork, int(artwork_id))
         if not artwork or artwork.artist_id != int(get_jwt_identity()):
             abort(404, description="Artwork not found")
@@ -73,15 +74,19 @@ class ArtworkResource(Resource):
         artwork.category_id = category.id
 
     def get(self, artwork_id):
-        print('Running... get()')  # DEBUGGING
+        current_app.logger.debug('Running... ArtworkResource.get()')
         """Get a single artwork by ID"""
         # Check if the artwork exists and belongs to the current artist
         artwork = ArtworkResource.get_artwork_or_404(artwork_id)
-        return artwork.to_dict(), 200
+        # Serialize the artwork
+        schema = ArtworkOutputSchema()
+        validated_artwork = schema.dump(artwork)
+        return validated_artwork, 200
 
     def post(self):
         """Create a new artwork"""
         # Log the request data for debugging purposes
+        current_app.logger.debug('Running... post()')
         data = request.get_json()
         schema = ArtworkInputSchema()
         try:
@@ -164,7 +169,11 @@ class CategoryList(Resource):
     def get(self):
         """Get all categories"""
         categories = Category.query.all()
-        return [category.to_dict() for category in categories], 200
+        # Serialize the categories
+        schema = CategorySchema(many=True)
+        validated_categories = schema.dump(categories)
+        # Return the serialized categories
+        return validated_categories, 200
 
 
 @api.route('/currencies', methods=['GET'])
@@ -172,4 +181,6 @@ class CurrencyList(Resource):
     def get(self):
         """Get all currencies"""
         currencies = Currency.query.all()
-        return [currency.to_dict() for currency in currencies], 200
+        schema = CurrencySchema(many=True)
+        validated_currencies = schema.dump(currencies)
+        return validated_currencies, 200
