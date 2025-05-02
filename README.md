@@ -46,7 +46,7 @@ Handles authentication and password management.
 ---
 
 ### 2. `store` Blueprint
-Public browsing, artwork details, voting, and comments.
+Public browsing, artwork details, voting, comments, and search.
 
 #### Endpoints:
 - `GET /store/artworks`  
@@ -55,6 +55,8 @@ Public browsing, artwork details, voting, and comments.
 - `POST /store/artworks/<id>/comment`  
 - `GET /store/artworks/<id>/comments`  
 - `GET /store/artist/<id>` — Public artist profile  
+- `GET /store/search` — Search artworks by artist, title, description  
+- `GET /store/filter` — Filter artworks by tags, prices, and categories  
 
 ---
 
@@ -126,5 +128,7 @@ Alerts and internal messages.
 - ✅ **Email sending**, password reset flows  
 - ✅ **Order status tracking** by user  
 - ✅ **Manual delivery handled by artist** with status updates  
+- ✅ **Search artworks** by artist, title, and description  
+- ✅ **Filter artworks** by tags, prices, and categories  
 
 ---
