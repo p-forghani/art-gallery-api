@@ -6,7 +6,7 @@ def test_get_all_artworks_no_artworks(client):
     assert data["message"] == "No artworks found"
 
 
-def test_get_all_artworks_with_artwork(client, auth_headers, create_artwork):
+def test_get_all_artworks_with_artwork(client, create_artwork):
     # create one artwork via artist endpoint
     artwork_id = create_artwork()
     response = client.get("/store/artworks")
@@ -27,7 +27,7 @@ def test_get_single_artwork_not_found(client):
     assert data["message"] == "Artwork not found"
 
 
-def test_get_single_artwork_success(client, auth_headers, create_artwork):
+def test_get_single_artwork_success(client, create_artwork):
     artwork_id = create_artwork()
     response = client.get(f"/store/artworks/{artwork_id}")
     assert response.status_code == 200
@@ -68,12 +68,14 @@ def test_remove_upvote_and_not_found(client, auth_headers, create_artwork):
     # upvote once
     client.post(f"/store/artworks/{artwork_id}/upvote", headers=auth_headers)
     # remove upvote
-    r1 = client.delete(f"/store/artworks/{artwork_id}/upvote", headers=auth_headers)
+    r1 = client.delete(
+        f"/store/artworks/{artwork_id}/upvote", headers=auth_headers)
     assert r1.status_code == 200
     d1 = r1.get_json()
     assert d1["status"] == "success"
     # remove again → error
-    r2 = client.delete(f"/store/artworks/{artwork_id}/upvote", headers=auth_headers)
+    r2 = client.delete(
+        f"/store/artworks/{artwork_id}/upvote", headers=auth_headers)
     assert r2.status_code == 400
     d2 = r2.get_json()
     assert d2["status"] == "error"
