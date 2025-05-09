@@ -1,4 +1,4 @@
-from flask import current_app, jsonify, request
+from flask import current_app, request
 from flask_restx import Resource
 from marshmallow import ValidationError
 from flask_jwt_extended import (create_access_token, get_jwt_identity,
@@ -15,13 +15,12 @@ class RegisterUserResource(Resource):
     def post(self):
 
         current_app.logger.info("Registering a new user")
-        print("Registering a new user")  # DEBUGGING
         schema = UserSchema()
         # Validate the input data
         try:
             validated_data = schema.load(request.get_json())
         except ValidationError as err:
-            return jsonify(err.messages), 400
+            return err.messages, 400
         # Check if the user already exists
         if User.query.filter_by(email=validated_data['email']).first():
             return {"message": "User already exists"}, 409

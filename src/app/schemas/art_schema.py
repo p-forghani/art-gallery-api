@@ -10,8 +10,8 @@ class ArtworkInputSchema(Schema):
     stock = fields.Int(required=True)
     description = fields.Str(required=True)
     category_name = fields.Str(required=True)
-    tag_names = fields.List(fields.Str(), required=False)
-    image_path = fields.Str(required=False)
+    tag_names = fields.List(fields.Str(), required=False, allow_none=True)
+    image_path = fields.Str(required=False, allow_none=True)
 
 
 # The formats for the Artwork schema that the client will receive

@@ -11,6 +11,8 @@ class User(db.Model):
     role = db.relationship('Role', back_populates='users')
     password_hash = db.Column(db.String(128), nullable=False)
     artworks = db.relationship('Artwork', back_populates='artist')
+    upvotes = db.relationship('Upvote', back_populates='user')
+    comments = db.relationship('Comment', back_populates='user')
 
     def __repr__(self):
         return f"<User {self.name}>"

@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 from pathlib import Path
 
@@ -13,6 +14,9 @@ class Config:
         or 'sqlite:///' + os.path.join(base_dir, 'app.db')
     )
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY') or 'your_jwt_secret_key'
+    # FUTURE: Set the JWT expiration time to a lower value for production
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=60)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=7)
 
 
 class TestingConfig(Config):

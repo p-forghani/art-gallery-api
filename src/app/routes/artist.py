@@ -1,11 +1,12 @@
 from flask import abort, request, current_app
+from marshmallow import ValidationError
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from flask_restx import Resource
 
 from src.app import db
 from src.app.models import Artwork, Category, Currency, Tag, User
 from src.app.routes import artist_bp
-from src.app.routes import artist_namespace as api
+from src.app.routes import artist_namespace as artist_ns
 from src.app.schemas.art_schema import (ArtworkInputSchema,
                                         ArtworkOutputSchema, CategorySchema,
                                         CurrencySchema, TagSchema)
@@ -13,6 +14,8 @@ from src.app.schemas.art_schema import (ArtworkInputSchema,
 
 @artist_bp.before_request
 def check_admin_access():
+    if request.path.startswith('/doc'):
+        return
     current_app.logger.debug('Running check_admin_access()')
     verify_jwt_in_request()
     current_user_id = get_jwt_identity()
@@ -21,7 +24,7 @@ def check_admin_access():
         return {"message": "Access forbidden: Artists only"}, 403
 
 
-@api.route('/dashboard', methods=['GET'])
+@artist_ns.route('/dashboard', methods=['GET'])
 class ArtistDashboard(Resource):
     def get(self):
         current_app.logger.debug('Running ArtistDashboard.get()')
@@ -32,8 +35,8 @@ class ArtistDashboard(Resource):
         return validated_artworks, 200
 
 
-@api.route('/artwork/<int:artwork_id>', methods=['GET', 'PUT', 'DELETE'])
-@api.route('/artwork', methods=['POST'])
+@artist_ns.route('/artwork/<int:artwork_id>', methods=['GET', 'PUT', 'DELETE'])
+@artist_ns.route('/artwork', methods=['POST'])
 class ArtworkResource(Resource):
 
     @staticmethod
@@ -122,7 +125,10 @@ class ArtworkResource(Resource):
         # Validate the request data
         data = request.get_json()
         schema = ArtworkInputSchema()
-        validated_data = schema.load(data)
+        try:
+            validated_data = schema.load(data)
+        except ValidationError as err:
+            return err.messages, 400
 
         tag_names = validated_data.pop('tag_names', [])
 
@@ -154,7 +160,7 @@ class ArtworkResource(Resource):
             {"message": "Artwork deleted"}, 200)
 
 
-@api.route('/tags', methods=['GET'])
+@artist_ns.route('/tags', methods=['GET'])
 class TagList(Resource):
     def get(self):
         """Get all tags"""
@@ -164,7 +170,7 @@ class TagList(Resource):
         return validated_tags, 200
 
 
-@api.route('/categories', methods=['GET'])
+@artist_ns.route('/categories', methods=['GET'])
 class CategoryList(Resource):
     def get(self):
         """Get all categories"""
@@ -176,7 +182,7 @@ class CategoryList(Resource):
         return validated_categories, 200
 
 
-@api.route('/currencies', methods=['GET'])
+@artist_ns.route('/currencies', methods=['GET'])
 class CurrencyList(Resource):
     def get(self):
         """Get all currencies"""

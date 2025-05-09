@@ -10,9 +10,9 @@ auth_api = Api(auth_bp, doc='/doc/auth')
 store_api = Api(store_bp, doc='/doc/store')
 artist_api = Api(artist_bp, doc='/doc/artist')
 
-auth_namespace = Namespace('auth')
-store_namespace = Namespace('store')
-artist_namespace = Namespace('artist')
+auth_namespace = Namespace(name='auth')
+store_namespace = Namespace(name='store')
+artist_namespace = Namespace(name='artist')
 
 auth_api.add_namespace(auth_namespace)
 artist_api.add_namespace(artist_namespace)
