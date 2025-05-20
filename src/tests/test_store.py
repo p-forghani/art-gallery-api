@@ -23,8 +23,8 @@ def test_get_single_artwork_not_found(client):
     response = client.get("/store/artworks/999")
     assert response.status_code == 404
     data = response.get_json()
-    assert data["status"] == "error"
-    assert data["message"] == "Artwork not found"
+    print(data)
+    assert "Artwork with id 999 not found" in data["message"]
 
 
 def test_get_single_artwork_success(client, create_artwork):

@@ -16,6 +16,7 @@ def test_create_artwork(client, auth_headers):
     }
 
     response = client.post("/artist/artwork", json=data, headers=auth_headers)
+    print(response.get_json())
     assert response.status_code == 201
     response_data = response.get_json()
     assert response_data["message"] == "Artwork created"
