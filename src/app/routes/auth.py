@@ -64,3 +64,5 @@ class UserProfileResource(Resource):
             return {"message": "User not found"}, 404
         schema = UserSchema()
         return schema.dump(user), 200
+
+# TODO: Implement the logout functionality

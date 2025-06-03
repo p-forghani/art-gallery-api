@@ -29,7 +29,10 @@ def artist_user(app):
     """
     with app.app_context():
         artist = User(
-            name="Test Artist", email="artist@example.com", role_id=2)
+            name="Test Artist",  # type: ignore
+            email="artist@example.com",  # type: ignore
+            role_id=2  # type: ignore
+        )
         artist.set_password("password")
         db.session.add(artist)
         db.session.commit()
@@ -80,3 +83,43 @@ def create_artwork(client, auth_headers):
         assert response.status_code == 201
         return response.get_json()["artwork_id"]
     return _create_artwork
+
+
+@pytest.fixture
+def general_auth_headers(app, client):
+    with app.app_context():
+        user = User(
+            name="General User",  # type: ignore
+            email="general@example.com",  # type: ignore
+            role_id=3  # type: ignore
+        )
+        user.set_password("password")
+        db.session.add(user)
+        db.session.commit()
+        queried_user = User.query.filter_by(
+            email="general@example.com"
+        ).first()
+        assert queried_user is not None, (
+            "General user was not created successfully."
+        )
+        assert queried_user.check_password("password"), (
+            "General user password is incorrect."
+        )
+    response = client.post("/auth/login", json={
+        "email": "general@example.com",
+        "password": "password"
+    })
+    access_token = response.get_json()["access_token"]
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
+def comment_artwork(create_artwork, client):
+    artwork_id = create_artwork()
+    r = client.post(
+        f"/store/artworks/{artwork_id}/comments",
+        json={'content': 'Great'},
+        headers=general_auth_headers
+    )
+    comment_id = r.get_json()['data']['comment_id']
+    return comment_id
