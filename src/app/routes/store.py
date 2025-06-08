@@ -249,6 +249,10 @@ class CommentResource(Resource):
         """
         comment = get_object_or_404('comment', comment_id)
         assert isinstance(comment, Comment)
+        if comment.user_id != int(get_jwt_identity()):
+            return {
+                'message': 'You are not allowed to delete this comment.'
+            }, 403
         db.session.delete(comment)
         db.session.commit()
         current_app.logger.info(

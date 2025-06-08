@@ -164,6 +164,41 @@ def test_reply_comment(
     assert r2.status_code == 201
 
 
+def test_delete_comment(
+        client, create_artwork, general_auth_headers, auth_headers
+):
+    artwork_id = create_artwork()
+    # Add comment to artwork by general user
+    r = client.post(
+        f"/store/artworks/{artwork_id}/comments",
+        json={'content': 'Hello World!'},
+        headers=general_auth_headers
+    )
+    comment_id = r.get_json()['comment_id']
+
+    # Delete comment unauthorised
+    r2 = client.delete(
+        f"/store/comments/{comment_id}"
+    )
+    assert r2.status_code == 401
+    assert r2.get_json()['msg'] == 'Missing Authorization Header'
+
+    # Delete a comment that doesn't belong to the user
+    r2 = client.delete(
+        f"/store/comments/{comment_id}",
+        headers=auth_headers
+    )
+    assert r2.status_code == 403
+
+    # Delete a comment authenticated and authorised
+    r3 = client.delete(
+        f"/store/comments/{comment_id}",
+        headers=general_auth_headers
+    )
+    assert r3.status_code == 200
+    assert r3.get_json()['status'] == 'success'
+
+
 def test_upvote_comment_unauthorized(client):
     # no auth header
     response = client.post("/store/upvote/comment/1")
