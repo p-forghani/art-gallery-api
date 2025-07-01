@@ -3,8 +3,6 @@ from datetime import timezone
 from datetime import datetime
 
 
-# TODO: Integrate UpvotableMixin approach to the previous upvote system
-
 class UpvotableMixin:
     """
     Mixin class to add upvote functionality to models.
@@ -101,10 +99,6 @@ class Artwork(db.Model, UpvotableMixin):
         db.session.add(comment)
         db.session.flush()
         return comment.id
-
-    def remove_comment(self, comment_id):
-        # TODO: Implement this method to remove a comment by its ID
-        pass
 
 
 class Category(db.Model):

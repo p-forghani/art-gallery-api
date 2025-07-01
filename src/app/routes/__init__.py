@@ -10,9 +10,9 @@ auth_api = Api(auth_bp, doc='/doc/auth', title='Auth API', description='Authenti
 store_api = Api(store_bp, doc='/doc/store', title='Store API', description='Artwork browsing, comments, and upvotes endpoints')
 artist_api = Api(artist_bp, doc='/doc/artist', title='Artist API', description='Artist-specific endpoints for managing artworks')
 
-auth_namespace = Namespace('auth', description='Authentication operations')
-store_namespace = Namespace('store', description='Store operations for browsing and interacting with artworks')
-artist_namespace = Namespace('artist', description='Artist operations for managing artworks')
+auth_namespace = Namespace('', description='Authentication operations')
+store_namespace = Namespace('', description='Store operations for browsing and interacting with artworks')
+artist_namespace = Namespace('', description='Artist operations for managing artworks')
 
 auth_api.add_namespace(auth_namespace)
 artist_api.add_namespace(artist_namespace)

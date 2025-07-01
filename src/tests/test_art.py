@@ -33,6 +33,16 @@ def test_create_artwork(client, auth_headers):
     assert len(artwork.tags) == 2
     assert {tag.title for tag in artwork.tags} == set(data["tag_names"])
 
+    invalid_data = {
+        "title": "another painting",
+        "stock": "lsdfk",
+        'name': 'john'
+    }
+    response_2 = client.post(
+        "/artist/artwork", json=invalid_data, headers=auth_headers
+        )
+    assert response_2.status_code == 400
+
 
 def test_get_artwork(client, auth_headers, create_artwork):
     """
@@ -96,6 +106,7 @@ def test_update_artwork(client, auth_headers, create_artwork):
 
     # Verify the artwork is updated in the database
     artwork = Artwork.query.get(artwork_id)
+    assert artwork is not None  # runtime safety + type hint for Pylance
     assert artwork.title == updated_data["title"]
     assert artwork.price == updated_data["price"]
     assert artwork.stock == updated_data["stock"]
@@ -131,5 +142,3 @@ def test_delete_artwork(client, auth_headers, create_artwork):
     # Verify the artwork is deleted from the database
     artwork = Artwork.query.get(artwork_id)
     assert artwork is None
-
-# TODO: Test invalid json
