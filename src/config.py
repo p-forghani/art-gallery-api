@@ -17,6 +17,9 @@ class Config:
     # FUTURE: Set the JWT expiration time to a lower value for production
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=60)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=7)
+    JWT_BLOCKLIST_ENABLED = True
+    # TODO: Add refresh token too.
+    JWT_BLOCKLIST_TOKEN_CHECKS = ['access']
 
 
 class TestingConfig(Config):
