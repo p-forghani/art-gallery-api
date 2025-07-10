@@ -1,15 +1,14 @@
-from marshmallow import ValidationError
-from src.app.schemas.store_schema import CommentOutputSchema
-from src.app.models import Comment, Artwork
-from flask import request
-from src.app.utils.artwork import get_object_or_404
-from flask import current_app
-from flask_jwt_extended import get_jwt_identity
-from flask_jwt_extended import jwt_required
-from src.app import db
-from src.app.schemas.art_schema import ArtworkOutputSchema
-from src.app.routes import store_namespace as store_ns
+from flask import current_app, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_restx import Resource, fields
+from marshmallow import ValidationError
+
+from src.app import db
+from src.app.models import Artwork, Comment
+from src.app.routes import store_namespace as store_ns
+from src.app.schemas.art_schema import ArtworkOutputSchema
+from src.app.schemas.store_schema import CommentOutputSchema
+from src.app.utils.artwork import get_object_or_404
 
 # Define base models
 error_model = store_ns.model('Error', {
@@ -30,7 +29,9 @@ artwork_model = store_ns.model('Artwork', {
     'image_url': fields.String(description='URL of the artwork image'),
     'created_at': fields.DateTime(description='Creation timestamp'),
     'updated_at': fields.DateTime(description='Last update timestamp'),
-    'user_id': fields.Integer(description='ID of the user who created the artwork')
+    'user_id': fields.Integer(
+        description='ID of the user who created the artwork'
+    )
 })
 
 # Define Comment models
@@ -39,9 +40,15 @@ comment_model = store_ns.model('Comment', {
     'content': fields.String(description='Comment content'),
     'created_at': fields.DateTime(description='Creation timestamp'),
     'updated_at': fields.DateTime(description='Last update timestamp'),
-    'user_id': fields.Integer(description='ID of the user who created the comment'),
-    'artwork_id': fields.Integer(description='ID of the artwork this comment belongs to'),
-    'parent_id': fields.Integer(description='ID of the parent comment if this is a reply')
+    'user_id': fields.Integer(
+        description='ID of the user who created the comment'
+    ),
+    'artwork_id': fields.Integer(
+        description='ID of the artwork this comment belongs to'
+    ),
+    'parent_id': fields.Integer(
+        description='ID of the parent comment if this is a reply'
+    )
 })
 
 # Define response models
@@ -73,19 +80,21 @@ comment_response = store_ns.model('CommentResponse', {
     'comment_id': fields.Integer(description='ID of the created comment')
 })
 
+
 @store_ns.route('/artworks', methods=['GET'])
 class GetAllArtResource(Resource):
-    @store_ns.doc('list_artworks',
+    @store_ns.doc(
+        'list_artworks',
         responses={
-            200: ('Successfully retrieved all artworks', artwork_list_response),
+            200: (
+                'Successfully retrieved all artworks', artwork_list_response),
             404: ('No artworks found', error_model),
             500: ('Internal server error', error_model)
         }
     )
     def get(self):
-        """
-        Get all artwork from the database.
-        
+        """Get all artwork from the database.
+
         Returns:
             A list of all artwork with their details.
             If no artworks are found, returns a 404 error.
@@ -112,7 +121,8 @@ class GetAllArtResource(Resource):
 
 @store_ns.route('/artworks/<int:artwork_id>', methods=['GET'])
 class GetArtworkResource(Resource):
-    @store_ns.doc('get_artwork',
+    @store_ns.doc(
+        'get_artwork',
         params={'artwork_id': 'The ID of the artwork to retrieve'},
         responses={
             200: ('Successfully retrieved artwork', artwork_response),
@@ -121,12 +131,11 @@ class GetArtworkResource(Resource):
         }
     )
     def get(self, artwork_id):
-        """
-        Get a single artwork by its ID.
-        
+        """Get a single artwork by its ID.
+
         Args:
             artwork_id (int): The ID of the artwork to retrieve
-            
+
         Returns:
             The artwork details if found, or an error message if not found
         """
@@ -148,9 +157,11 @@ class GetArtworkResource(Resource):
 
 @store_ns.route(
     '/upvote/<string:target_type>/<int:target_id>',
-    methods=['GET', 'POST', 'DELETE'])
+    methods=['GET', 'POST', 'DELETE']
+)
 class UpvoteResource(Resource):
-    @store_ns.doc('get_upvotes',
+    @store_ns.doc(
+        'get_upvotes',
         params={
             'target_type': 'Type of the target (artwork or comment)',
             'target_id': 'ID of the target to get upvotes for'
@@ -163,13 +174,12 @@ class UpvoteResource(Resource):
         }
     )
     def get(self, target_type, target_id):
-        """
-        Get the number of upvotes for an artwork or comment.
-        
+        """Get the number of upvotes for an artwork or comment.
+
         Args:
             target_type (str): Type of the target ('artwork' or 'comment')
             target_id (int): ID of the target
-            
+
         Returns:
             The number of upvotes for the artwork or comment
         """
@@ -195,7 +205,8 @@ class UpvoteResource(Resource):
             }, 500
 
     @jwt_required()
-    @store_ns.doc('upvote_target',
+    @store_ns.doc(
+        'upvote_target',
         params={
             'target_type': 'Type of the target (artwork or comment)',
             'target_id': 'ID of the target to upvote'
@@ -210,13 +221,12 @@ class UpvoteResource(Resource):
         security='Bearer Auth'
     )
     def post(self, target_type, target_id):
-        """
-        Upvote an artwork or comment.
-        
+        """Upvote an artwork or comment.
+
         Args:
             target_type (str): Type of the target ('artwork' or 'comment')
             target_id (int): ID of the target to upvote
-            
+
         Returns:
             Success message if upvoted successfully
         """
@@ -238,7 +248,8 @@ class UpvoteResource(Resource):
             }, 500
 
     @jwt_required()
-    @store_ns.doc('remove_upvote',
+    @store_ns.doc(
+        'remove_upvote',
         params={
             'target_type': 'Type of the target (artwork or comment)',
             'target_id': 'ID of the target to remove upvote from'
@@ -253,13 +264,12 @@ class UpvoteResource(Resource):
         security='Bearer Auth'
     )
     def delete(self, target_type, target_id):
-        """
-        Remove an upvote from an artwork or comment.
-        
+        """Remove an upvote from an artwork or comment.
+
         Args:
             target_type (str): Type of the target ('artwork' or 'comment')
             target_id (int): ID of the target to remove upvote from
-            
+
         Returns:
             Success message if upvote removed successfully
         """
@@ -283,13 +293,18 @@ class UpvoteResource(Resource):
 
 @store_ns.route(
     '/artworks/<int:artwork_id>/comments',
-    methods=['POST', 'GET'])
+    methods=['POST', 'GET']
+)
 class CommentArtworkResource(Resource):
     @jwt_required()
-    @store_ns.doc('add_comment',
+    @store_ns.doc(
+        'add_comment',
         params={'artwork_id': 'The ID of the artwork to comment on'},
         body=store_ns.model('CommentInput', {
-            'content': fields.String(required=True, description='Comment content')
+            'content': fields.String(
+                required=True,
+                description='Comment content'
+            )
         }),
         responses={
             201: ('Successfully added comment', comment_response),
@@ -300,14 +315,14 @@ class CommentArtworkResource(Resource):
         security='Bearer Auth'
     )
     def post(self, artwork_id):
-        """
-        Add a comment to an artwork.
-        
+        """Add a comment to an artwork.
+
         Args:
             artwork_id (int): The ID of the artwork to comment on
-            
+
         Returns:
-            A success message and the comment ID if the comment is added successfully
+            A success message and the comment ID if the comment is added
+            successfully
         """
         json_data = request.get_json()
         if not json_data or not json_data.get('content'):
@@ -332,7 +347,8 @@ class CommentArtworkResource(Resource):
             'comment_id': comment_id,
         }, 201
 
-    @store_ns.doc('list_comments',
+    @store_ns.doc(
+        'list_comments',
         params={'artwork_id': 'The ID of the artwork to get comments for'},
         responses={
             200: ('Successfully retrieved comments', comment_list_response),
@@ -340,12 +356,11 @@ class CommentArtworkResource(Resource):
         }
     )
     def get(self, artwork_id):
-        """
-        List comments for an artwork.
-        
+        """List comments for an artwork.
+
         Args:
             artwork_id (int): The ID of the artwork to get comments for
-            
+
         Returns:
             A list of comments for the artwork
         """
@@ -355,7 +370,8 @@ class CommentArtworkResource(Resource):
             artwork.comments
             .filter_by(parent_id=None)
             .order_by(Comment.created_at.desc())
-            .all())
+            .all()
+        )
         schema = CommentOutputSchema(many=True)
         data = schema.dump(comments)
         return {
@@ -370,10 +386,14 @@ class CommentArtworkResource(Resource):
 )
 class CommentResource(Resource):
     @jwt_required()
-    @store_ns.doc('reply_to_comment',
+    @store_ns.doc(
+        'reply_to_comment',
         params={'comment_id': 'The ID of the comment to reply to'},
         body=store_ns.model('ReplyInput', {
-            'content': fields.String(required=True, description='Reply content')
+            'content': fields.String(
+                required=True,
+                description='Reply content'
+            )
         }),
         responses={
             201: ('Successfully added reply', success_model),
@@ -384,12 +404,11 @@ class CommentResource(Resource):
         security='Bearer Auth'
     )
     def post(self, comment_id):
-        """
-        Reply to a comment.
-        
+        """Reply to a comment.
+
         Args:
             comment_id (int): The ID of the comment to reply to
-            
+
         Returns:
             A success message if the reply is added successfully
         """
@@ -416,7 +435,8 @@ class CommentResource(Resource):
         }, 201
 
     @jwt_required()
-    @store_ns.doc('delete_comment',
+    @store_ns.doc(
+        'delete_comment',
         params={'comment_id': 'The ID of the comment to delete'},
         responses={
             200: ('Successfully deleted comment', success_model),
@@ -427,12 +447,11 @@ class CommentResource(Resource):
         security='Bearer Auth'
     )
     def delete(self, comment_id):
-        """
-        Delete a comment.
-        
+        """Delete a comment.
+
         Args:
             comment_id (int): The ID of the comment to delete
-            
+
         Returns:
             A success message if the comment is deleted successfully
         """
@@ -452,7 +471,8 @@ class CommentResource(Resource):
             'message': 'Comment deleted successfully'
         }, 200
 
-    @store_ns.doc('list_replies',
+    @store_ns.doc(
+        'list_replies',
         params={'comment_id': 'The ID of the comment to get replies for'},
         responses={
             200: ('Successfully retrieved replies', comment_list_response),
@@ -460,19 +480,18 @@ class CommentResource(Resource):
         }
     )
     def get(self, comment_id):
-        """
-        List replies for a comment.
-        
+        """List replies for a comment.
+
         Args:
             comment_id (int): The ID of the comment to get replies for
-            
+
         Returns:
             A list of replies for the comment
         """
         comment = get_object_or_404('comment', comment_id)
         assert isinstance(comment, Comment)
         comment_replies = (
-            comment.replies
+            comment.replies  # type: ignore
             .order_by(Comment.created_at.desc())
             .all()
         )

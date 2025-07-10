@@ -5,11 +5,11 @@ from flask_jwt_extended import (
     create_access_token, get_jwt, get_jwt_identity, jwt_required
 )
 
-from src.app.utils.email import send_reset_password_email
+from src.app.utils.mail_sender import send_reset_password_email
 from src.app import db, jwt
 from src.app.models import User, TokenBlocklist
 from src.app.routes import auth_namespace as api
-from src.app.schemas.user_schema import UserSchema
+from src.app.schemas.user_schema import UserSchema, ResetPasswordSchema
 
 
 @jwt.token_in_blocklist_loader
@@ -110,24 +110,27 @@ class ForgotPasswordResource(Resource):
             reset_token = user.generate_reset_token()
             # Send the reset email
             send_reset_password_email(user.email, reset_token)
+            return {"message": "Reset Password Request Received Successfully"}
 
 
-@api.route('reset-password', methods=['POST'])
+@api.route('/reset-password', methods=['PUT'])
 class ResetPasswordResource(Resource):
-    def post(self):
+    def put(self):
         current_app.logger.info("Reset password")
-        schema = UserSchema(only=('email', 'password'))
         # Validate the input data
         try:
-            validated_data = schema.load(request.get_json())
+            validated_data = ResetPasswordSchema().load(request.get_json())
         except ValidationError as err:
             return err.messages, 400
-        # Check if the user exists
-        user = User.query.filter_by(
-            email=validated_data['email']  # type: ignore
-        ).first()
-        if user:
-            user.set_password(validated_data['password'])  # type: ignore
-            db.session.commit()
-            return {"message": "Password reset successfully"}, 200
-        return {"message": "User not found"}, 404
+        # Fetch the user by ID
+        user = db.session.get(
+            User,
+            User.verify_reset_token(
+                token=validated_data['token']  # type: ignore
+            )
+        )
+        if user is None:
+            return {"message": "User not found"}, 404
+        user.set_password(validated_data['new_password'])  # type: ignore
+        db.session.commit()
+        return {"message": "Password reset successfully"}, 200

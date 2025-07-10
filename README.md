@@ -1,134 +1,282 @@
-# 🖼️ Art Gallery API – Product Requirements Document
+# 🖼️ Art Gallery API
 
-## 📌 Overview
-The Art Gallery API powers a platform where artists can showcase their artworks and users can interact with them through upvotes and comments—similar to **Product Hunt**. It supports user authentication, artist dashboards, an admin panel, Stripe integration, and a public storefront.
-
----
-
-## 👥 User Roles
-
-### 👤 General User
-- Register, login, manage profile  
-- View and upvote artworks  
-- Comment on artworks  
-- View public artist profiles  
-- Manage cart and orders  
-- Place an order for an artwork  
-- Track order status  
-
-### 🎨 Artist
-- CRUD on own artworks  
-- View sales and stats dashboard  
-- Receive notifications  
-- Manage orders related to own artworks  
-- Update order statuses (e.g., delivered to courier, add tracking URL)  
-
-### 🛠️ Admin
-- Manage users, artworks, and orders  
-- View overall statistics  
-- Promote or demote users to/from artist role  
+## Overview
+The Art Gallery API powers a platform where artists can showcase their artworks and users can interact with them through upvotes and comments—similar to Product Hunt. It supports user authentication, artist dashboards, an admin panel, Stripe integration, and a public storefront.
 
 ---
 
-## 🔧 Blueprints / Modules
-
-### 1. `auth` Blueprint
-Handles authentication and password management.
-
-#### Endpoints:
-- `POST /auth/register`  
-- `POST /auth/login`  
-- `GET /auth/profile`  
-- `PUT /auth/profile`  
-- `POST /auth/forgot-password`  
-- `POST /auth/reset-password`  
-
----
-
-### 2. `store` Blueprint
-Public browsing, artwork details, voting, comments, and search.
-
-#### Endpoints:
-- `GET /store/artworks`  
-- `GET /store/artworks/<id>`  
-- `POST /store/artworks/<id>/upvote`  
-- `POST /store/artworks/<id>/comment`  
-- `GET /store/artworks/<id>/comments`  
-- `GET /store/artist/<id>` — Public artist profile  
-- `GET /store/search` — Search artworks by artist, title, description  
-- `GET /store/filter` — Filter artworks by tags, prices, and categories  
+## Table of Contents
+- [Features](#features)
+- [User Roles](#user-roles)
+- [Setup & Installation](#setup--installation)
+- [Environment Variables](#environment-variables)
+- [Authentication](#authentication)
+- [API Endpoints](#api-endpoints)
+  - [Auth](#auth)
+  - [Store](#store)
+  - [Artist](#artist)
+- [Data Models & Schemas](#data-models--schemas)
+- [Error Handling](#error-handling)
+- [Email & Password Reset](#email--password-reset)
+- [Stripe Integration](#stripe-integration)
+- [Extra Features](#extra-features)
 
 ---
 
-### 3. `artist` Blueprint
-Manages an artist’s own content and stats.
-
-#### Endpoints:
-- `GET /artist/artworks`  
-- `POST /artist/artworks`  
-- `PUT /artist/artworks/<id>`  
-- `DELETE /artist/artworks/<id>`  
-- `GET /artist/dashboard`  
-- `GET /artist/orders`  
-- `PUT /artist/orders/<id>` — Update order status and tracking URL  
-- `GET /artist/notifications`  
+## Features
+- User registration, login, JWT-based authentication
+- Artists can CRUD their own artworks
+- Public artwork browsing, upvoting, and commenting
+- Nested comments (replies)
+- Role-based access (User, Artist, Admin)
+- Password reset via email (SendGrid)
+- CORS support for frontend integration
+- Admin and artist dashboards (API endpoints)
+- Stripe integration for orders (planned)
 
 ---
 
-### 4. `admin` Blueprint
-Full control over the platform.
-
-#### Endpoints:
-- `GET /admin/users`  
-- `PATCH /admin/users/<id>` — Promote/demote artist  
-- `DELETE /admin/users/<id>`  
-- `GET /admin/artworks`  
-- `DELETE /admin/artworks/<id>`  
-- `GET /admin/orders`  
-- `GET /admin/dashboard`  
+## User Roles
+- **General User**: Register, login, view/upvote/comment on artworks, manage profile, place orders, track order status
+- **Artist**: All user features + manage own artworks, view dashboard, manage orders, update order statuses
+- **Admin**: Full control over users, artworks, orders, and platform stats
 
 ---
 
-### 5. `cart` Blueprint
-Shopping cart and checkout process.
+## Setup & Installation
 
-#### Endpoints:
-- `GET /cart`  
-- `POST /cart/add/<artwork_id>`  
-- `DELETE /cart/remove/<artwork_id>`  
-- `POST /cart/checkout`  
-- `GET /orders` — User's order history  
-- `GET /orders/<id>` — Get order status and tracking details  
-
----
-
-### 6. `notifications` Blueprint
-Alerts and internal messages.
-
-#### Endpoints:
-- `GET /notifications`  
-- `PUT /notifications/<id>` — Mark as read  
-- `POST /notifications` — (Internal use: admin/artist)  
+1. **Clone the repository**
+2. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. **Set environment variables** (see below)
+4. **Run the application**:
+   ```bash
+   export FLASK_APP=src/app
+   flask run
+   ```
 
 ---
 
-## 💳 Stripe Integration
-- Create checkout session  
-- Handle success/cancel webhooks  
-- Save order data and notify users/artists  
+## Environment Variables
+- `SECRET_KEY`: Secret for Flask sessions and JWT
+- `JWT_SECRET_KEY`: Secret for JWT tokens
+- `DATABASE_URL`: SQLAlchemy DB URI (default: SQLite `app.db`)
+- `SENDGRID_API_KEY`: For sending emails
+- `SENDGRID_FROM_EMAIL`: Sender email address
+- `FRONTEND_URL`: Used in password reset emails
 
 ---
 
-## ✨ Extra Features
-
-- ✅ **Upvote + Comment system** for artworks (like Product Hunt)  
-- ✅ **Public artist pages** with profile and artworks  
-- ✅ **Dashboards** for artists and admins  
-- ✅ **Notification system** for orders and interactions  
-- ✅ **Email sending**, password reset flows  
-- ✅ **Order status tracking** by user  
-- ✅ **Manual delivery handled by artist** with status updates  
-- ✅ **Search artworks** by artist, title, and description  
-- ✅ **Filter artworks** by tags, prices, and categories  
+## Authentication
+- Uses JWT (JSON Web Tokens) for stateless authentication
+- Access tokens are required for protected endpoints (send as `Authorization: Bearer <token>` header)
+- Logout is handled by blacklisting tokens
 
 ---
+
+## API Endpoints
+
+### Auth
+| Method | Endpoint                | Description                  | Auth Required |
+|--------|-------------------------|------------------------------|---------------|
+| POST   | `/auth/register`        | Register a new user          | No            |
+| POST   | `/auth/login`           | Login and get JWT token      | No            |
+| GET    | `/auth/profile`         | Get current user profile     | Yes           |
+| POST   | `/auth/logout`          | Logout (blacklist token)     | Yes           |
+| POST   | `/auth/forgot-password` | Request password reset email | No            |
+| PUT    | `/auth/reset-password`  | Reset password with token    | No            |
+
+#### Example: Register
+```json
+POST /auth/register
+{
+  "name": "Alice",
+  "email": "alice@example.com",
+  "password": "password123",
+  "confirm_password": "password123"
+}
+```
+
+#### Example: Login
+```json
+POST /auth/login
+{
+  "email": "alice@example.com",
+  "password": "password123"
+}
+Response: { "access_token": "..." }
+```
+
+---
+
+### Store
+| Method | Endpoint                                 | Description                        | Auth Required |
+|--------|------------------------------------------|------------------------------------|---------------|
+| GET    | `/store/artworks`                        | List all artworks                  | No            |
+| GET    | `/store/artworks/<artwork_id>`           | Get artwork details                | No            |
+| GET    | `/store/upvote/<type>/<id>`              | Get upvotes for artwork/comment    | No            |
+| POST   | `/store/upvote/<type>/<id>`              | Upvote artwork/comment             | Yes           |
+| DELETE | `/store/upvote/<type>/<id>`              | Remove upvote                      | Yes           |
+| POST   | `/store/artworks/<artwork_id>/comments`  | Add comment to artwork             | Yes           |
+| GET    | `/store/artworks/<artwork_id>/comments`  | List comments for artwork          | No            |
+| POST   | `/store/comments/<comment_id>`           | Reply to a comment                 | Yes           |
+| DELETE | `/store/comments/<comment_id>`           | Delete a comment                   | Yes (owner)   |
+| GET    | `/store/comments/<comment_id>`           | List replies for a comment         | No            |
+
+#### Example: Get All Artworks
+```json
+GET /store/artworks
+Response: {
+  "status": "success",
+  "data": [ { ...artwork fields... } ]
+}
+```
+
+#### Example: Add Comment
+```json
+POST /store/artworks/1/comments
+Authorization: Bearer <token>
+{
+  "content": "Amazing artwork!"
+}
+```
+
+---
+
+### Artist
+All endpoints require authentication and artist role.
+
+| Method | Endpoint                        | Description                |
+|--------|---------------------------------|----------------------------|
+| GET    | `/artist/dashboard`             | List own artworks          |
+| POST   | `/artist/artwork`               | Create new artwork         |
+| GET    | `/artist/artwork/<id>`          | Get own artwork details    |
+| PUT    | `/artist/artwork/<id>`          | Update own artwork         |
+| DELETE | `/artist/artwork/<id>`          | Delete own artwork         |
+| GET    | `/artist/tags`                  | List all tags              |
+| GET    | `/artist/categories`            | List all categories        |
+| GET    | `/artist/currencies`            | List all currencies        |
+
+#### Example: Create Artwork
+```json
+POST /artist/artwork
+Authorization: Bearer <token>
+{
+  "title": "Sunset",
+  "price": 100.0,
+  "currency_id": 1,
+  "stock": 5,
+  "description": "A beautiful sunset.",
+  "category_name": "Nature",
+  "tag_names": ["sunset", "nature"]
+}
+```
+
+---
+
+## Data Models & Schemas
+
+### User
+```json
+{
+  "id": 1,
+  "name": "Alice",
+  "email": "alice@example.com",
+  "role_id": 2
+}
+```
+
+### Artwork (Output)
+```json
+{
+  "id": 1,
+  "title": "Sunset",
+  "price": 100.0,
+  "stock": 5,
+  "description": "A beautiful sunset.",
+  "image_path": "/uploads/sunset.jpg",
+  "category": { "id": 1, "title": "Nature" },
+  "tags": [ { "id": 1, "title": "sunset" } ],
+  "currency": { "id": 1, "title": "USD", "code": "USD", "symbol": "$" },
+  "artist": { "id": 2, "name": "Bob" }
+}
+```
+
+### Artwork (Input)
+```json
+{
+  "title": "Sunset",
+  "price": 100.0,
+  "currency_id": 1,
+  "stock": 5,
+  "description": "A beautiful sunset.",
+  "category_name": "Nature",
+  "tag_names": ["sunset", "nature"],
+  "image_path": "/uploads/sunset.jpg"
+}
+```
+
+### Comment
+```json
+{
+  "id": 1,
+  "content": "Amazing!",
+  "created_at": "2024-07-01T12:00:00Z",
+  "user_id": 1,
+  "upvotes": 3,
+  "replies": [ ... ]
+}
+```
+
+---
+
+## Error Handling
+- Errors are returned as JSON with `status` and `message` fields
+- Example:
+```json
+{
+  "status": "error",
+  "message": "No artworks found"
+}
+```
+
+---
+
+## Email & Password Reset
+- Password reset requests send an email with a reset link (using SendGrid)
+- The frontend should provide a `/reset-password?token=...` page to handle the reset
+- Example reset email content:
+  - Subject: "Password Reset Request"
+  - Body: Link to `${FRONTEND_URL}/reset-password?token=...`
+
+---
+
+## Stripe Integration
+- Stripe integration is planned for order and checkout endpoints
+- Endpoints will include creating checkout sessions, handling webhooks, and saving order data
+
+---
+
+## Extra Features
+- Upvote and comment system for artworks
+- Public artist pages
+- Dashboards for artists and admins
+- Notification system for orders and interactions
+- Order status tracking
+- Manual delivery handled by artist
+
+---
+
+## Dependencies
+See `requirements.txt` for all dependencies. Major ones include:
+- Flask, Flask-RESTx, Flask-JWT-Extended, Flask-SQLAlchemy, Flask-Migrate
+- Marshmallow (schemas)
+- SendGrid (email)
+- bcrypt (password hashing)
+
+---
+
+## Contact & Contribution
+For questions or contributions, please open an issue or pull request.

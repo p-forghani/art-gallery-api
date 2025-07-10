@@ -1,5 +1,4 @@
-from marshmallow import Schema, fields
-from marshmallow.exceptions import ValidationError
+from marshmallow import Schema, fields, validate
 
 
 class UserSchema(Schema):
@@ -7,9 +6,13 @@ class UserSchema(Schema):
     name = fields.Str(required=True)
     email = fields.Str(required=True)
     password = fields.Str(load_only=True)
-    confirm_password = fields.Str(load_only=True)
+    confirm_password = fields.Str(
+        load_only=True,
+        validate=validate.Equal("password", error="Passwords do not match")
+    )
 
-    def validate_passwords(self, data):
-        if data.get('password') != data.get('confirm_password'):
-            raise ValidationError("Passwords do not match")
-        return data
+
+class ResetPasswordSchema(Schema):
+    token = fields.String(required=True)
+    new_password = fields.String(
+        required=True, validate=validate.Length(min=8))
